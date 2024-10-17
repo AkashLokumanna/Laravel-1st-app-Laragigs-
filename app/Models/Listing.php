@@ -20,6 +20,7 @@ class Listing extends Model
         'tags',
         'user_id',
         'logo',
+        
     
     ];
 
