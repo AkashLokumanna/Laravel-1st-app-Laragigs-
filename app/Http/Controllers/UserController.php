@@ -10,64 +10,120 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    //show register/create form
-    public function create(){
+    // Show register/create form
+    public function create()
+    {
         return view('auth.register');
     }
 
-    //create new user
-    public function store(Request $request){
+    // Create new user
+    public function store(Request $request)
+    {
         $formFields = $request->validate([
-               'name' => ['required', 'min:3'],
-               'email' => ['required', 'email', Rule::unique('users', 'email')],
-               'password' => 'required|confirmed|min:6'
+            'name' => ['required', 'min:3'],
+            'email' => ['required', 'email', Rule::unique('users', 'email')],
+            'password' => 'required|confirmed|min:6',
+            'role' => 'required|string|in:user,admin,editor', // Validate the role
         ]);
 
         // Hash Password
         $formFields['password'] = bcrypt($formFields['password']);
 
-        // create user
+        // Create user
         $user = User::create($formFields);
 
-        //log in 
+        // Log in 
         Auth::login($user);
 
-        return redirect('/')->with('message', 'User created successfully and Logged in');
-
-       
+        // Redirect based on role
+        if ($formFields['role'] === 'admin') {
+            return redirect('/')->with('message', 'User created successfully and logged in as Admin');
+        } elseif ($formFields['role'] === 'editor') {
+            return redirect('/')->with('message', 'User created successfully and logged in as Editor');
+        } else {
+            return redirect('/')->with('message', 'User created successfully and logged in');
+        }
     }
 
-      //show login/login form
-      public function login(){
+    //Admin page
+    public function adminDashboard()
+{
+    return view('admin.dashboard');
+}
+
+    // Editor page
+    public function editorDashboard()
+    {
+        return view('dashboard.editor');
+    }
+
+    //users page
+    public function users()
+    {
+        $users = User::all();
+        return view('/', compact('users'));
+    }
+
+    // Show login form
+    public function login()
+    {
         return view('auth.login');
     }
 
-   // Authenticate user
-    public function authenticate(Request $request){
+    // Authenticate user
+    public function authenticate(Request $request)
+    {
         $formFields = $request->validate([
             'email' => ['required', 'email'],
-            'password' => ['required']
+            'password' => ['required'],
         ]);
 
-        //attempt to authenticate user
-        if(Auth::attempt($formFields)){
-
+        // Attempt to authenticate user
+        if (Auth::attempt($formFields)) {
             $request->session()->regenerate();
-            return redirect('/')->with('message', 'Logged in successfully');
+
+            // Get the authenticated user
+            $user = Auth::user();
+
+            // Redirect based on role
+            if ($user->role === 'admin') {
+                return redirect('/')->with('message', 'Logged in successfully as Admin');
+            } elseif ($user->role === 'editor') {
+                return redirect('/')->with('message', 'Logged in successfully as Editor');
+            } else {
+                return redirect('/')->with('message', 'Logged in successfully as User');
+            }
         }
 
         return back()->withErrors(['email' => 'Invalid email or password'])->onlyInput('email');
     }
 
-    //logout user
-    public function logout(Request $request){
+    // Logout user
+    public function logout(Request $request)
+    {
         Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect('/')->with('message', 'Logged out successfully');
-    } 
+    }
+
+    // Uncomment and implement role-based dashboard methods if needed
+    /*
+    public function adminDashboard()
+    {
+        return view('admin.dashboard');
+    }
+
+    public function editorDashboard()
+    {
+        return view('editor.dashboard');
+    }
+
+    public function userDashboard()
+    {
+        return view('user.dashboard');
+    }
+    */
 }
-
-
