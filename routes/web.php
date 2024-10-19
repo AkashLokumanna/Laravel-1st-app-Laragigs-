@@ -82,6 +82,8 @@ Route::get('/login', [UserController::class, 'login'])->name('login')->middlewar
 // log in user
 Route::post('/users/authenticate', [UserController::class, 'authenticate']);
 
+// auth sanctum middleware
+Route::middleware('auth:sanctum')->get('/listings', [ListingController::class, 'index']);
 
 /*
 Route::get('/hello', function () {
