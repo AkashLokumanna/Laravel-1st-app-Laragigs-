@@ -61,6 +61,12 @@
                             <i class="fa-solid fa-pencil-alt"></i> Editor Dashboard
                         </a>
                     </li>
+                    <li>
+                        <a href="/listings/manage" class="hover:text-laravel"
+                            ><i class="fa-solid fa-gear"></i>
+                            Manage Listing</a>
+                    </li>
+                    
                 @else
                     <li>
                         <a href="/dashboard" class="hover:text-laravel">
